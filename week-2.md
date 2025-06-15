@@ -15,4 +15,4 @@ Thanks to [PR #930](https://github.com/CCExtractor/sample-platform/pull/930), th
 This means that the sample platform is fully operational again, and can be relied upon to help fix regressions and prevent new ones from popping up.
 
 ## Fixing WTV and XDS regressions
-As evidenced by this [test](https://sampleplatform.ccextractor.org/test/5794), a lot of XDS tests are currently failing on Windows due to segmentation faults. The cause for this seems to be in the rust section of the code, as a C-only build seems to run fine. Currently looking into this and getting familiar with Visual Studio's debugging suite.
+As evidenced by this [test](https://sampleplatform.ccextractor.org/test/5794) on the latest commit, a lot of XDS tests are currently failing on Windows due to segmentation faults. The cause for this seems to be in the rust section of the code, as a C-only build seems to run fine. Currently looking into this and getting familiar with Visual Studio's debugging suite.
