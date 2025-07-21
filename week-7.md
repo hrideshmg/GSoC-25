@@ -8,6 +8,7 @@ Also made a [PR](https://github.com/CCExtractor/sample-platform/pull/933) to sep
 
 ## CCExtractor regression fixes
 Raised three PRs to fix three different regressions for CCextractor. One had to do with how elementary streams were handled, another one was due to a loss of data from conversion of data structures between Rust and C and the third one was simply due to a missing font on the machine which runs the tests.
-[PR 1](https://github.com/CCExtractor/ccextractor/pull/1716)
-[PR 2](https://github.com/CCExtractor/ccextractor/pull/1714)
+
+[PR 1](https://github.com/CCExtractor/ccextractor/pull/1716)<br>
+[PR 2](https://github.com/CCExtractor/ccextractor/pull/1714)<br>
 [PR 3](https://github.com/CCExtractor/sample-platform/pull/934)
