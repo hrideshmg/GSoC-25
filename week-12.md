@@ -9,8 +9,8 @@ Fixed an issue on the sample platform where certain WTV tests would randomly tim
 Also made two PRs to the Flutter GUI to migrate it to the latest flutter version and sync the changes in the command line arguments.
 
 ## List of PRs
-[Regression 1](https://github.com/CCExtractor/ccextractor/pull/1733)
-[Regression 2](https://github.com/CCExtractor/ccextractor/pull/1732)
-[Sample platform fix](https://github.com/CCExtractor/sample-platform/pull/938)
-[Flutter GUI upgrade](https://github.com/CCExtractor/ccextractorfluttergui/pull/68)
-[Flutter GUI sync](https://github.com/CCExtractor/ccextractorfluttergui/pull/69)
+[Regression 1](https://github.com/CCExtractor/ccextractor/pull/1733)<br>
+[Regression 2](https://github.com/CCExtractor/ccextractor/pull/1732)<br>
+[Sample platform fix](https://github.com/CCExtractor/sample-platform/pull/938)<br>
+[Flutter GUI upgrade](https://github.com/CCExtractor/ccextractorfluttergui/pull/68)<br>
+[Flutter GUI sync](https://github.com/CCExtractor/ccextractorfluttergui/pull/69)<br>
