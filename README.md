@@ -9,10 +9,10 @@ Contributor: Hridesh MG<a href="https://www.linkedin.com/in/hridesh-mg/">
 ---
 
 ## Summary
-CCExtractor’s last stable release (v0.94) came out in 2021, and since then, the codebase has undergone significant modifications. My work has primarily been to ensure that the project is ready for the 1.00 release by fixing regressions, migrating the Flutter-based GUI and ensuring that the sample platform (which is used for running regression tests) is stable.
+CCExtractor’s last stable release (v0.94) came out in 2021, and since then, the codebase has undergone significant modifications. My work has primarily been to ensure that the project is ready for the 1.00 release by fixing regressions, updating the Flutter-based GUI and ensuring that the sample platform is stable.
 
 ## Sample Platform Improvements
-Prior to my involvement with CCExtractor during GSoC I noticed that the [sample platform](https://github.com/CCExtractor/sample-platform) was not working with all the tests ending in failure. Over the course of GSoC, I've made around 12 [PRs](#sample-platform) for various fixes and improvements to the platform, here is a brief note on some of the changes:
+Prior to my involvement with CCExtractor during GSoC, I noticed that the [sample platform](https://github.com/CCExtractor/sample-platform) was not working with all the tests ending in failure. Over the course of GSoC, I've made around 12 [PRs](#sample-platform) for various fixes and improvements to the platform, here is a brief note on some of the changes:
 
 - Migrated the platform to Ubuntu 24.04 to fix test failures due to tesseract being out of date
 - Optimized Windows VM startup times by around 10 mins through the use of Rclone copy
@@ -22,29 +22,29 @@ Prior to my involvement with CCExtractor during GSoC I noticed that the [sample 
 - Updated the installation guide for the platform
 - Various misc fixes for fixing certain regressions
 
-As a result of these changes, the sample platform is now fully operational and stable. I've also added a few new regressions for testing certain file types/parameters that were not previously being tested for regressions.
+As a result of these changes, the sample platform is now fully operational and stable. I've also added a few new regressions for testing certain file types/parameters that were not previously being tested.
 
 #### A Note On A Challenging Fix
-One issue that I would like to highlight was the timing out of certain WTV/XDS files for Windows VMs. Puzzlingly, these files would run perfectly fine locally but the moment they ran in the VM provisioned by the sample platform, the tests would start to time out eventually causing the entire test suite to fail due to the whole process taking forever.
+One issue that I would like to highlight was the timing out of certain WTV/XDS files on Windows VMs. Puzzlingly, these files would run perfectly fine locally but the moment they ran in the VM provisioned by the sample platform, the tests would start to time out, eventually causing the entire test suite to fail due to the whole process taking forever.
 
-This issue took me a week or two to fix due to how hard it was to reproduce. Eventually, I had isolated it down to Rclone, which is the program that we use for mounting the cloud buckets that contain the sample files. After experimenting with a whole bunch of configuration options for the program, I came upon this [forum post](https://forum.rclone.org/t/vfs-is-slow-when-reading-in-small-8-bytes-chunks/40161) which detailed a similar issue with file reads from large files. Eventually after reading some obscure [GitHub conversations](https://github.com/winfsp/winfsp/issues/307) on the file system emulator that Rclone uses under the hood (WinFSP), I realized that the issue was with how chunked reads were handled by the Windows kernel.<br>
-After enabling kernel file metadata and data caching by setting `FileInfoTimeout=-1`, the issue was resolved.
+This issue took me a week or two to fix due to how hard it was to reproduce. Eventually, I had isolated it down to Rclone, which is the program that we use for mounting the cloud buckets that contain the sample files. After experimenting with a whole bunch of configuration options for the program, I came upon this [forum post](https://forum.rclone.org/t/vfs-is-slow-when-reading-in-small-8-bytes-chunks/40161) which detailed a similar issue with file reads from large files.<br>
+After reading some obscure [GitHub conversations](https://github.com/winfsp/winfsp/issues/307) on the file system emulator that Rclone uses under the hood (WinFSP), I realized that the issue was with how chunked reads were being handled by the Windows kernel. Enabling kernel file metadata caching by setting `FileInfoTimeout=-1` finally solved the issue.
 
 ## CCextractor Regression Fixes
 This is where the bulk of my work during GSoC has been focused. After fixing the Sample Platform, there were around 51 [broken](https://sampleplatform.ccextractor.org/test/5794) regressions on Windows and Linux. Note that a lot of these were caused by issues with the sample platform itself, there were only around 10-15 regressions that were failing due to bugs in CCextractor itself.
 
 These bugs were varied in nature, ranging from memory management issues like segmentation faults in the CEA-708 and XDS decoders, to logical errors in Unicode character encoding and incorrect luminance calculations for OCR. A significant portion of the work involved using debugging tools like GDB to trace these issues across the C and Rust codebases.
 
-A major contributor to the accumulation of the bugs in CCextractor was that the sample platform would group new failing test cases with old ones already present in the master branch when reporting on PRs giving a false illusion that a certain PR was free from bugs. This was apparently a bug that had existed for more than 2 years and was fixed in this [PR](https://github.com/CCExtractor/sample-platform/pull/932).
+A major contributor to the accumulation of the bugs in CCextractor was that the sample platform, when reporting on new PRs, would group new failing test cases with old ones already present in the master branch. This gave the false illusion that the PR was free from bugs. This was apparently a bug that had existed for more than 2 years and was fixed in my PR [here](https://github.com/CCExtractor/sample-platform/pull/932).
 
 
 ### Hardsubx Debugging
 One particular interesting issue that I had a lot of fun debugging were the Hardsubx discrepancies between the C and Rust builds of CCextractor. After fixing the initial segmentation fault for Hardsubx on Rust, the generated SRT files were often inferior to the C only builds, which was puzzling because the Rust code uses largely the same logic as C.
 
-After skimming through the code, I went a bit deeper and ~~wrote~~ *vibe-coded* a custom [script](https://gist.github.com/hrideshmg/bb944c7665e3382e1620c4404f479529) using OpenCV that would display image files on a grid and update them as they were modified live. Using this script, I kept an eye on the pre-processing stages for the image files from the video and noticed slight differences in the luminance threshold stage between Rust and C.
+After skimming through the code, I went a bit deeper and wrote (with the help of AI) a custom [script](https://gist.github.com/hrideshmg/bb944c7665e3382e1620c4404f479529) using OpenCV that would display image files on a grid and update them as they were modified live. Using this script, I kept an eye on the pre-processing stages for the image files from the video and noticed slight differences in the luminance threshold stage between Rust and C.
 
-After looking into the implementation of the calculation of luminance, I noticed that in the old C code, the RGB to LAB conversion was done [manually](https://github.com/hrideshmg/ccextractor/blob/ocr_fixes/src/lib_ccx/hardsubx_imgops.c#L69), in Rust we [use](https://github.com/hrideshmg/ccextractor/blob/master/src/rust/src/hardsubx/imgops.rs#L15) the `palette` crate for this purpose. 
-The `Srgb` implementation from `palette` we were using assumed that the input image is [gamma corrected](https://en.wikipedia.org/wiki/Gamma_correction), and thus performs gamma decoding to make the RGB values linear.
+After looking into the implementation for luminance calculation, I noticed that in the old C code, the RGB to LAB conversion was done [manually](https://github.com/hrideshmg/ccextractor/blob/ocr_fixes/src/lib_ccx/hardsubx_imgops.c#L69), in Rust we instead [use](https://github.com/hrideshmg/ccextractor/blob/master/src/rust/src/hardsubx/imgops.rs#L15) the `palette` crate for this purpose. 
+The `Srgb` implementation from `palette` however assumes that the input image is [gamma corrected](https://en.wikipedia.org/wiki/Gamma_correction), and thus performs gamma decoding to make the RGB values linear.
 
 This was, however unnecessary, because our input is already linear RGB. I modified the code to use [`LinSrgb`](https://docs.rs/palette/latest/palette/type.LinSrgb.html) instead and that fixed the issue.
 <hr>
@@ -52,7 +52,7 @@ This was, however unnecessary, because our input is already linear RGB. I modifi
 The details of the other fixes are available in their respective PR descriptions, and more of the debugging strategies I followed are detailed in the weekly reports linked [here](#week-wise-reports).
 
 ## Flutter GUI updates
-The [Flutter GUI](https://github.com/CCExtractor/ccextractorfluttergui) had not been updated in a while and hence was refusing to build on the latest Flutter SDK. I [migrated](https://github.com/CCExtractor/ccextractorfluttergui/pull/68) the project and its dependencies to the latest SDK and also made a [PR](https://github.com/CCExtractor/ccextractorfluttergui/pull/69) to sync the changes in the latest CCextractor builds with the GUI.
+The [Flutter GUI](https://github.com/CCExtractor/ccextractorfluttergui) had not been updated in a while and hence was refusing to build on the latest Flutter SDK. I [migrated](https://github.com/CCExtractor/ccextractorfluttergui/pull/68) the project and its dependencies to the latest SDK and also made two PRs to sync the changes in the latest CCextractor builds with the GUI.
 
 ## Week Wise Reports
 These reports were written during the GSoC period.
@@ -107,8 +107,9 @@ Note: I had my finals between Weeks 8-10, hence I was unable to work much. This 
 ### Flutter GUI
 | No. | Pull Request | PR Name                                            | Status |
 |-----|--------------|----------------------------------------------------|--------|
-| 1   | [#69](https://github.com/CCExtractor/ccextractorfluttergui/pull/69) | Update CCExtractor args to latest format and bundle latest build | Open |
-| 2   | [#68](https://github.com/CCExtractor/ccextractorfluttergui/pull/68) | Bump Flutter SDK to latest version | Open |
+| 1   | [#70](https://github.com/CCExtractor/ccextractorfluttergui/pull/70) | fix: migrate navigation rail to built in package | Open |
+| 2   | [#69](https://github.com/CCExtractor/ccextractorfluttergui/pull/69) | Update CCExtractor args to latest format and bundle latest build | Open |
+| 3   | [#68](https://github.com/CCExtractor/ccextractorfluttergui/pull/68) | Bump Flutter SDK to latest version | Open |
 
 ## Outcomes
 - v1.00 is now release-ready
